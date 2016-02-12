@@ -153,13 +153,6 @@ public final class MutableProperty<Value>: MutablePropertyType {
 	/// Initializes the property with the given value to start.
 	public init(_ initialValue: Value) {
 		var value = initialValue
-
-		lock = NSRecursiveLock()
-		lock.name = "org.reactivecocoa.ReactiveCocoa.MutableProperty"
-
-		getter = { value }
-		setter = { newValue in value = newValue }
-
 		(signal, observer) = Signal.pipe()
 	}
 
