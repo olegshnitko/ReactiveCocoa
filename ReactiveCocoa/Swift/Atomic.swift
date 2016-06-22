@@ -77,7 +77,7 @@ public final class Atomic<Value> {
 		_value = value
 		_mutex = mutex
 	}
-
+	
 	private func lock() {
 		_mutex.lock()
 	}
