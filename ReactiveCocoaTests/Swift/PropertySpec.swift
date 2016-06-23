@@ -532,6 +532,19 @@ class PropertySpec: QuickSpec {
 				property.value = 2
 				expect(mappedProperty.value) == 5
 			}
+			
+			it("should transform each value from the original property exactly once") {
+			
+				var transformations: [Int] = []
+				let transform: (Int) -> Int = { transformations.append($0); return $0 + 2 }
+				
+				let property = MutableProperty(1)
+				let _ = property.map(transform)
+				
+				property.value = 2
+				
+				expect(transformations) == [1, 2]
+			}
 		}
 
 		describe("binding") {
