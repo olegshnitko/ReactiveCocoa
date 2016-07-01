@@ -31,11 +31,14 @@ public final class Action<Input, Output, Error: ErrorType> {
 	public let errors: Signal<Error, NoError>
 
 	/// Whether the action is currently executing.
-	public var executing: AnyProperty<Bool> {
-		return AnyProperty(_executing)
+	public let executing: AnyProperty<Bool>
+
+	/// Whether the action is currently processing some input.
+	public var executingInput: AnyProperty<Input?> {
+		return AnyProperty(_executingInput)
 	}
 
-	private let _executing: MutableProperty<Bool> = MutableProperty(false)
+	private let _executingInput: MutableProperty<Input?> = MutableProperty(nil)
 
 	/// Whether the action is currently enabled.
 	public var enabled: AnyProperty<Bool> {
@@ -68,8 +71,9 @@ public final class Action<Input, Output, Error: ErrorType> {
 		values = events.map { $0.value }.ignoreNil()
 		errors = events.map { $0.error }.ignoreNil()
 
+		executing = _executingInput.map { $0 != nil }
 		_enabled <~ enabledIf.producer
-			.combineLatestWith(_executing.producer)
+			.combineLatestWith(executing.producer)
 			.map(Action.shouldBeEnabled)
 	}
 
@@ -96,7 +100,7 @@ public final class Action<Input, Output, Error: ErrorType> {
 
 			dispatch_sync(self.executingQueue) {
 				if self._enabled.value {
-					self._executing.value = true
+					self._executingInput.value = input
 					startedExecuting = true
 				}
 			}
@@ -116,7 +120,7 @@ public final class Action<Input, Output, Error: ErrorType> {
 			}
 
 			disposable += {
-				self._executing.value = false
+				self._executingInput.value = nil
 			}
 		}
 	}
